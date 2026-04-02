@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useVoting } from "@/context/VotingContext";
 import IssueCard from "./IssueCard";
 import DistrictFilter from "./DistrictFilter";
@@ -59,12 +60,12 @@ export default function CitizenView() {
               </div>
             </div>
           </div>
-          <a
+          <Link
             href="/admin"
             className="text-xs font-semibold text-yellow-900 bg-yellow-300 hover:bg-yellow-200 active:bg-yellow-100 px-3 py-2 rounded-xl transition-colors"
           >
             관리자 →
-          </a>
+          </Link>
         </div>
       </header>
 

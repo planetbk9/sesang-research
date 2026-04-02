@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 import { useVoting } from "@/context/VotingContext";
 import { CATEGORY_COLORS } from "@/types/issue";
 import DistrictFilter from "./DistrictFilter";
@@ -73,12 +74,12 @@ export default function AdminDashboard() {
               </div>
             </div>
           </div>
-          <a
+          <Link
             href="/"
             className="text-xs font-semibold text-yellow-900 bg-yellow-300 hover:bg-yellow-200 active:bg-yellow-100 px-3 py-2 rounded-xl transition-colors"
           >
             ← 시민 화면
-          </a>
+          </Link>
         </div>
       </header>
 
