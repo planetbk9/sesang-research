@@ -1,12 +1,13 @@
 {
-  "name": "4d78cf69-c27c-4d79-8668-dc669e712c40",
+  "name": "sesang-research",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "echo \"No tests configured for proposal demo\" && exit 0"
   },
   "dependencies": {
     "next": "16.2.2",
