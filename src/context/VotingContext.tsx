@@ -5,7 +5,7 @@ import React, {
   useContext,
   useState,
   useCallback,
-  useEffect,
+  useSyncExternalStore,
 } from "react";
 import { Issue } from "@/types/issue";
 import { ISSUES } from "@/data/issues";
@@ -14,7 +14,7 @@ import { ISSUES } from "@/data/issues";
 const LS_VOTE_COUNTS = "icsc_vote_counts";
 const LS_VOTED_ISSUES = "icsc_voted_issues";
 
-/** Load persisted vote deltas from localStorage (issue id → extra votes added by user) */
+/** Load persisted vote deltas from localStorage */
 function loadVoteDeltas(): Record<string, number> {
   try {
     const raw = localStorage.getItem(LS_VOTE_COUNTS);
@@ -43,33 +43,36 @@ function applyDeltas(base: Issue[], deltas: Record<string, number>): Issue[] {
   );
 }
 
+// ── Hydration detection via useSyncExternalStore ─────────────
+const subscribe = () => () => {};
+const getSnapshot = () => true;
+const getServerSnapshot = () => false;
+
+function useHydrated() {
+  return useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+}
+
 // ── Context type ─────────────────────────────────────────────
 interface VotingContextType {
   issues: Issue[];
   votedIssues: Set<string>;
-  recentlyVoted: string | null;
   castVote: (issueId: string) => void;
-  clearRecentVote: () => void;
 }
 
 const VotingContext = createContext<VotingContextType | undefined>(undefined);
 
 // ── Provider ─────────────────────────────────────────────────
 export function VotingProvider({ children }: { children: React.ReactNode }) {
-  // Initialise from localStorage (client-side only)
-  const [issues, setIssues] = useState<Issue[]>(ISSUES);
-  const [votedIssues, setVotedIssues] = useState<Set<string>>(new Set());
-  const [recentlyVoted, setRecentlyVoted] = useState<string | null>(null);
-  const [hydrated, setHydrated] = useState(false);
+  const hydrated = useHydrated();
 
-  // Hydrate from localStorage on mount (client only)
-  useEffect(() => {
-    const deltas = loadVoteDeltas();
-    const voted = loadVotedIssues();
-    setIssues(applyDeltas(ISSUES, deltas));
-    setVotedIssues(voted);
-    setHydrated(true);
-  }, []);
+  const [issues, setIssues] = useState<Issue[]>(() => {
+    if (typeof window === "undefined") return ISSUES;
+    return applyDeltas(ISSUES, loadVoteDeltas());
+  });
+  const [votedIssues, setVotedIssues] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    return loadVotedIssues();
+  });
 
   const castVote = useCallback(
     (issueId: string) => {
@@ -85,7 +88,6 @@ export function VotingProvider({ children }: { children: React.ReactNode }) {
 
       const nextVoted = new Set([...votedIssues, issueId]);
       setVotedIssues(nextVoted);
-      setRecentlyVoted(issueId);
 
       // Persist to localStorage
       try {
@@ -97,31 +99,19 @@ export function VotingProvider({ children }: { children: React.ReactNode }) {
           JSON.stringify([...nextVoted])
         );
       } catch {
-        // localStorage unavailable — silently continue (state still updated)
+        // localStorage unavailable — silently continue
       }
     },
     [votedIssues]
   );
 
-  const clearRecentVote = useCallback(() => {
-    setRecentlyVoted(null);
-  }, []);
-
-  // Suppress first-render mismatch by not rendering children until hydrated
-  if (!hydrated) {
-    return (
-      <VotingContext.Provider
-        value={{ issues: ISSUES, votedIssues: new Set(), recentlyVoted: null, castVote, clearRecentVote }}
-      >
-        {children}
-      </VotingContext.Provider>
-    );
-  }
+  // Use base data during SSR, hydrated data on client
+  const contextValue = hydrated
+    ? { issues, votedIssues, castVote }
+    : { issues: ISSUES, votedIssues: new Set<string>(), castVote };
 
   return (
-    <VotingContext.Provider
-      value={{ issues, votedIssues, recentlyVoted, castVote, clearRecentVote }}
-    >
+    <VotingContext.Provider value={contextValue}>
       {children}
     </VotingContext.Provider>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import { Issue, CATEGORY_COLORS } from "@/types/issue";
 import { useVoting } from "@/context/VotingContext";
 
@@ -23,27 +23,21 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function IssueCard({ issue }: IssueCardProps) {
-  const { votedIssues, recentlyVoted, castVote, clearRecentVote } = useVoting();
+  const { votedIssues, castVote } = useVoting();
   const hasVoted = votedIssues.has(issue.id);
-  const justVoted = recentlyVoted === issue.id;
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    if (justVoted) {
-      setShowConfirmation(true);
-      const timer = setTimeout(() => {
-        setShowConfirmation(false);
-        clearRecentVote();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [justVoted, clearRecentVote]);
-
-  const handleVote = () => {
+  const handleVote = useCallback(() => {
     if (!hasVoted) {
       castVote(issue.id);
+      setShowConfirmation(true);
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => {
+        setShowConfirmation(false);
+      }, 3000);
     }
-  };
+  }, [hasVoted, castVote, issue.id]);
 
   const categoryColorClass =
     CATEGORY_COLORS[issue.category] ?? "bg-gray-100 text-gray-700";
