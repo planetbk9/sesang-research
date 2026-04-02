@@ -20,6 +20,9 @@ const nextConfig: NextConfig = {
   // All pages are fully client-side; no server features are used.
   output: "export",
 
+  // Trailing slash ensures GitHub Pages serves /admin/ → admin/index.html
+  trailingSlash: true,
+
   // Sub-path when hosted on GitHub Pages (<username>.github.io/<repo>)
   basePath,
   assetPrefix: basePath,
