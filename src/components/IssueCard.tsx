@@ -51,8 +51,8 @@ export default function IssueCard({ issue }: IssueCardProps) {
     STATUS_COLORS[issue.status] ?? "bg-gray-100 text-gray-600";
 
   return (
-    <article className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-shadow hover:shadow-md">
-      <div className="p-5">
+    <article className="h-full flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden transition-shadow hover:shadow-md">
+      <div className="flex flex-col flex-1 p-5">
         {/* ── Badges row ─────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-2 mb-3">
           <span
@@ -76,12 +76,12 @@ export default function IssueCard({ issue }: IssueCardProps) {
         </h3>
 
         {/* ── Description ────────────────────────────────────────── */}
-        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-4">
+        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2 mb-4 flex-1">
           {issue.description}
         </p>
 
         {/* ── Footer: vote count + button ─────────────────────────── */}
-        <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-50">
+        <div className="flex items-center justify-between gap-3 pt-3 border-t border-gray-50 mt-auto">
           {/* Vote count */}
           <div className="flex items-center gap-1.5 text-gray-600">
             <svg
