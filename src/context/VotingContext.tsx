@@ -1,7 +1,8 @@
 "use client";
 
 import React, { createContext, useContext, useState, useCallback } from "react";
-import { Issue, INITIAL_ISSUES } from "@/data/mockData";
+import { Issue } from "@/types/issue";
+import { ISSUES } from "@/data/issues";
 
 interface VotingContextType {
   issues: Issue[];
@@ -14,22 +15,27 @@ interface VotingContextType {
 const VotingContext = createContext<VotingContextType | undefined>(undefined);
 
 export function VotingProvider({ children }: { children: React.ReactNode }) {
-  const [issues, setIssues] = useState<Issue[]>(INITIAL_ISSUES);
+  const [issues, setIssues] = useState<Issue[]>(ISSUES);
   const [votedIssues, setVotedIssues] = useState<Set<string>>(new Set());
   const [recentlyVoted, setRecentlyVoted] = useState<string | null>(null);
 
-  const castVote = useCallback((issueId: string) => {
-    if (votedIssues.has(issueId)) return;
+  const castVote = useCallback(
+    (issueId: string) => {
+      if (votedIssues.has(issueId)) return;
 
-    setIssues((prev) =>
-      prev.map((issue) =>
-        issue.id === issueId ? { ...issue, votes: issue.votes + 1 } : issue
-      )
-    );
+      setIssues((prev) =>
+        prev.map((issue) =>
+          issue.id === issueId
+            ? { ...issue, voteCount: issue.voteCount + 1 }
+            : issue
+        )
+      );
 
-    setVotedIssues((prev) => new Set([...prev, issueId]));
-    setRecentlyVoted(issueId);
-  }, [votedIssues]);
+      setVotedIssues((prev) => new Set([...prev, issueId]));
+      setRecentlyVoted(issueId);
+    },
+    [votedIssues]
+  );
 
   const clearRecentVote = useCallback(() => {
     setRecentlyVoted(null);

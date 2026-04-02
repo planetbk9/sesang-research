@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from "react";
-import { DISTRICTS } from "@/data/mockData";
+import { GU_LIST, getDongList } from "@/data/issues";
 
 // ─── Props ─────────────────────────────────────────────────────────────────
 
@@ -25,9 +25,8 @@ export default function DistrictFilter({
   onDongChange,
   className = "",
 }: DistrictFilterProps) {
-  // Resolve dong list from the selected gu
-  const selectedDistrict = DISTRICTS.find((d) => d.gu === selectedGu);
-  const dongs = selectedDistrict?.dongs ?? [];
+  // Resolve dong list from the selected gu (derived from actual issue data)
+  const dongs = selectedGu !== "전체" ? getDongList(selectedGu) : [];
 
   const guIsFiltered = selectedGu !== "전체";
   const dongIsFiltered = selectedDong !== "전체";
@@ -96,9 +95,9 @@ export default function DistrictFilter({
               className={selectClass(guIsFiltered)}
             >
               <option value="전체">전체 구</option>
-              {DISTRICTS.map((d) => (
-                <option key={d.gu} value={d.gu}>
-                  {d.gu}
+              {GU_LIST.map((gu) => (
+                <option key={gu} value={gu}>
+                  {gu}
                 </option>
               ))}
             </select>
